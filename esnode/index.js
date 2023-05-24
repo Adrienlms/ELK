@@ -25,24 +25,24 @@ app.listen(port, () => {
 
 
 
-app.get('/database/data/:data/type/:type', async function (req, res) {
+app.get('/database/:data/pagination/:pagination', async function (req, res) {
     async function Search () {
-        const type = req.param("type")
-        const data = req.param("data")
-        const test = {}
-        test[type] = data
-        console.log('test Value: ', JSON.stringify(test))
-        console.log(type, data)
-      const body = await client.search({
-        index: 'csv_india_crops',
-        body: {
-            size: 100,
-            query: {
-                match: test
+        const pagination = req.param("pagination")
+        const body = await client.search({
+            index: 'csv_india_crops',
+            body: {
+                from: pagination,
+                size: 50,
+                query: {
+                    more_like_this : {
+                        fields : ["Crop", "District", "Season", "State"],
+                        like : req.param("data"),
+                        min_term_freq : 1,
+                        max_query_terms : 12
+                }
             }
         }
       })
-      console.log(body)
      return body.hits.hits
     }
     var SearchResult = await Search()
