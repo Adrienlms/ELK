@@ -34,14 +34,38 @@ app.get('/database/:data/pagination/:pagination', async function (req, res) {
                 from: pagination,
                 size: 50,
                 query: {
-                    more_like_this : {
-                        fields : ["Crop", "District", "Season", "State"],
-                        like : req.param("data"),
-                        min_term_freq : 1,
-                        max_query_terms : 12
+                    query_string : {
+                        query : "*" + req.param("data") +"*",
+                        fields : ["Crop", "District", "Season", "State"]
+                    }
                 }
             }
-        }
+        })
+     return body.hits.hits
+    }
+    var SearchResult = await Search()
+    res.header("Access-Control-Allow-Origin", "*");
+    return res.send(SearchResult)
+})
+            
+
+
+app.get('/database/:data/', async function (req, res) {
+    async function Search () {
+        const pagination = req.param("pagination")
+        const body = await client.search({
+            index: 'csv_india_crops',
+            body: {
+                from: pagination,
+                size: 10000,
+                _source: ["Yield", "Year"],
+                query: {
+                    query_string : {
+                        query : "*" + req.param("data") +"*",
+                        fields : ["Crop", "District", "Season", "State"]
+                    }
+                }
+            }
       })
      return body.hits.hits
     }
